@@ -43,6 +43,13 @@ function convertIv(string $iv): string
     return base64_encode(hash('md5', $iv, true));
 }
 
+test('decrypt encrypted  Email message', function () {
+    $encrypted = loadFile('EncryptedEmail.txt');
+    $decrypted = $this->encryption->decrypt($encrypted);
+
+    var_dump($decrypted);
+});
+
 function loadFile(string $fileName): string
 {
     $filePath = __DIR__ . '/resources/' . $fileName;

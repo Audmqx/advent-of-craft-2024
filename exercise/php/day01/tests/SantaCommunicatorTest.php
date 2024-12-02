@@ -2,35 +2,42 @@
 
 declare(strict_types = 1);
 
-use Communication\SantaCommunicator;
+use Communication\{Name, SantaCommunicator, Location, Reindeer, HolidayCoordination};
 use Tests\doubles\TestLogger;
 
 const NORTH_POLE = 'North Pole';
 const DASHER = 'Dasher';
 const NUMBER_OF_DAYS_TO_REST = 2;
-const NUMBER_OF_DAYS_BEFORE_CHRISTMAS = 24;
+const DAYS_FOR_COMING_BACK = 5;
+const OVERDUE_DAYS = 25;
 
 beforeEach(function (): void {
 	$this->logger = new TestLogger;
-	$this->communicator = new SantaCommunicator(NUMBER_OF_DAYS_TO_REST);
+	$this->reindeer =  new Reindeer(name: new Name(DASHER), location: new Location(NORTH_POLE));
 });
 
 it('composes a message', function (): void {
-	$communicator = new SantaCommunicator(NUMBER_OF_DAYS_TO_REST);
-	$message = $communicator->composeMessage(DASHER, NORTH_POLE, 5, NUMBER_OF_DAYS_BEFORE_CHRISTMAS);
+	$holidayCoordination = new HolidayCoordination(daysToRest: NUMBER_OF_DAYS_TO_REST, daysForComingBack: DAYS_FOR_COMING_BACK);
+	$communicator = new SantaCommunicator(reindeer: $this->reindeer, holidayCoordination: $holidayCoordination);
 
-	expect($message)->toBe('Dear Dasher, please return from North Pole in 17 day(s) to be ready and rest before Christmas.');
+	$message = $communicator->composeMessage($this->logger);
+	$daysBeforeReturn = $holidayCoordination->daysBeforeReturn();
+
+	expect($holidayCoordination->isOverdue())->toBeFalse();
+	expect($message)->toBe("Dear Dasher, please return from North Pole in $daysBeforeReturn day(s) to be ready and rest before Christmas.");
 });
 
 it('detects overdue reindeer', function (): void {
-	$overdue = $this->communicator->isOverdue(DASHER, NORTH_POLE, NUMBER_OF_DAYS_BEFORE_CHRISTMAS, NUMBER_OF_DAYS_BEFORE_CHRISTMAS, $this->logger);
+	$holidayCoordination = new HolidayCoordination(daysToRest: OVERDUE_DAYS);
+	$communicator = new SantaCommunicator(reindeer: $this->reindeer, holidayCoordination: $holidayCoordination);
 
-	expect($overdue)->toBeTrue()->
-		and($this->logger->loggedMessage())->toBe('Overdue for Dasher located North Pole.');
+	$message = $communicator->composeMessage($this->logger);
+
+	expect($holidayCoordination->isOverdue())->toBeTrue();
+	expect($message)->tobe('Overdue');
+	expect($this->logger->loggedMessage())->toBe('Overdue for Dasher located North Pole.');
 });
 
-it('returns false when no overdue', function (): void {
-	$overdue = $this->communicator->isOverdue(DASHER, NORTH_POLE, 21, NUMBER_OF_DAYS_BEFORE_CHRISTMAS, $this->logger);
 
-	expect($overdue)->toBeFalse();
-});
+
+

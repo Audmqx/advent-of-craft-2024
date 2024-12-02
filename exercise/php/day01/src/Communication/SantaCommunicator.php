@@ -2,37 +2,21 @@
 
 declare(strict_types = 1);
 
-namespace Communication {
-	class SantaCommunicator
+namespace Communication;
+
+class SantaCommunicator
 	{
-		private int $numberOfDaysToRest;
+		
+		public function __construct(private Reindeer $reindeer, private HolidayCoordination $holidayCoordination)
+		{}
 
-		public function __construct(int $numberOfDaysToRest)
+		public function composeMessage(ILogger $logger): string
 		{
-			$this->numberOfDaysToRest = $numberOfDaysToRest;
-		}
-
-		public function composeMessage(string $reindeerName, string $currentLocation, int $numbersOfDaysForComingBack, int $numberOfDaysBeforeChristmas): string
-		{
-			$daysBeforeReturn = $this->daysBeforeReturn($numbersOfDaysForComingBack, $numberOfDaysBeforeChristmas);
-
-			return "Dear {$reindeerName}, please return from {$currentLocation} in {$daysBeforeReturn} day(s) to be ready and rest before Christmas.";
-		}
-
-		public function isOverdue(string $reindeerName, string $currentLocation, int $numbersOfDaysForComingBack, int $numberOfDaysBeforeChristmas, ILogger $logger): bool
-		{
-			if ($this->daysBeforeReturn($numbersOfDaysForComingBack, $numberOfDaysBeforeChristmas) <= 0) {
-				$logger->log("Overdue for {$reindeerName} located {$currentLocation}.");
-
-				return true;
+			if($this->holidayCoordination->isOverdue()){
+				$logger->log("Overdue for {$this->reindeer->name()} located {$this->reindeer->location()}.");
+				return 'Overdue';
 			}
 
-			return false;
-		}
-
-		private function daysBeforeReturn(int $numbersOfDaysForComingBack, int $numberOfDaysBeforeChristmas): int
-		{
-			return $numberOfDaysBeforeChristmas - $numbersOfDaysForComingBack - $this->numberOfDaysToRest;
+			return "Dear {$this->reindeer->name()}, please return from {$this->reindeer->location()} in {$this->holidayCoordination->daysBeforeReturn()} day(s) to be ready and rest before Christmas.";
 		}
 	}
-}

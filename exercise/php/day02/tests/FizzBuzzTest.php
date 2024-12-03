@@ -2,10 +2,21 @@
 
 declare(strict_types = 1);
 
-use Games\FizzBuzz;
+use Games\{FizzBuzz,Mapping};
 use QuickCheck\Generator;
 use QuickCheck\PHPUnit\PropertyConstraint;
 use QuickCheck\Property;
+
+
+it('fizzBuzz can be extended', function(): void {
+	Mapping::add(7,"Whizz");
+	$result = FizzBuzz::convert(7);
+	expect($result)->toBe("Whizz");
+
+	Mapping::add(11,"Bang");
+	$result = FizzBuzz::convert(11);
+	expect($result)->toBe("Bang");
+});
 
 it('returns the correct representation for given numbers', function ($input, $expectedResult): void {
 	$result = FizzBuzz::convert($input);

@@ -2,47 +2,47 @@
 
 declare(strict_types = 1);
 
-namespace Games {
-	class FizzBuzz
+namespace Games;
+
+class FizzBuzz 
+{
+	public const MIN = 1;
+	public const MAX = 100;
+
+	public static array $mapping = [
+		15 => 'FizzBuzz',
+		3 => 'Fizz',
+		5 => 'Buzz',
+	];
+
+	public static function convert(int $input): ?string
 	{
-		public const MIN = 1;
+		if (self::isOutOfRange($input)) {
+			return null;
+		}
 
-		public const MAX = 100;
+		return self::convertSafely($input);
+	}
 
-		private static array $mapping = [
-			15 => 'FizzBuzz',
-			3 => 'Fizz',
-			5 => 'Buzz',
-		];
+	private static function isOutOfRange(int $input): bool
+	{
+		return self::MIN > $input || self::MAX < $input;
+	}
 
-		public static function convert(int $input): ?string
-		{
-			if (self::isOutOfRange($input)) {
-				return null;
+	private static function convertSafely(int $input): string
+	{
+		foreach (self::$mapping as $key => $value) {
+			if (self::isDivisibleBy($input, $key)) {
+				return $value;
 			}
-
-			return self::convertSafely($input);
 		}
 
-		private static function isOutOfRange(int $input): bool
-		{
-			return self::MIN > $input || self::MAX < $input;
-		}
+		return (string) $input;
+	}
 
-		private static function convertSafely(int $input): string
-		{
-			foreach (self::$mapping as $key => $value) {
-				if (self::isDivisibleBy($input, $key)) {
-					return $value;
-				}
-			}
-
-			return (string) $input;
-		}
-
-		private static function isDivisibleBy(int $input, int $divisor): bool
-		{
-			return $input % $divisor === 0;
-		}
+	private static function isDivisibleBy(int $input, int $divisor): bool
+	{
+		return $input % $divisor === 0;
 	}
 }
+

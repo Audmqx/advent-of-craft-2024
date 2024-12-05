@@ -11,35 +11,40 @@ beforeEach(function (): void {
 	$this->service = new SantaWorkshopService;
 });
 
-dataset('fuzzing_inputs', function () {
+dataset('fuzzing_inputs_with_attributes', function () {
     foreach (range(1, 100) as $i) {
-        $giftNameLength = random_int(1, 30); 
-        $colorLength = random_int(1, 10); 
-        $materialLength = random_int(1, 10); 
-
         yield [
-            'giftName' => bin2hex(random_bytes($giftNameLength)), 
-            'weight' => random_int(-100, 200) / 10, 
-            'color' => chr(random_int(0, 255)) . bin2hex(random_bytes($colorLength)), 
-            'material' => str_shuffle('abcdefghijklmnopqrstuvwxyz' . bin2hex(random_bytes($materialLength))),
+            bin2hex(random_bytes(random_int(1, 30))), 
+            random_int(-100, 200) / 10,              
+            chr(random_int(0, 255)) . bin2hex(random_bytes(random_int(1, 10))), 
+            str_shuffle('abcdefghijklmnopqrstuvwxyz' . bin2hex(random_bytes(random_int(1, 10)))), 
+            'recommendedAge', 
+            (string)random_int(-100, 100), 
         ];
     }
 });
 
-it('performs complete fuzzing on SantaWorkshopService::prepareGift', function (string $giftName, float $weight, string $color, string $material) {
+
+
+it('performs fuzzing on adding attributes to gifts', function (string $giftName, float $weight, string $color, string $material, string $attributeName, string $attributeValue) {
     try {
         $gift = $this->service->prepareGift($giftName, $weight, $color, $material);
-        expect($gift)->toBeInstanceOf(Gift::class);
+
+        if ($attributeName === 'recommendedAge' && is_numeric($attributeValue)) {
+            $gift->addAttribute($attributeName, $attributeValue);
+
+            expect($gift->recommendedAge())->toBe((int)$attributeValue);
+        }
     } catch (Throwable $e) {
         if ($weight > 5.0) {
             expect($e)->toBeInstanceOf(InvalidArgumentException::class);
             expect($e->getMessage())->toBe('Gift is too heavy for Santa\'s sleigh');
         } else {
-            echo "Unexpected exception for input: " . json_encode(compact('giftName', 'weight', 'color', 'material')) . "\n";
-            echo "Exception: " . get_class($e) . " - " . $e->getMessage() . "\n";
+            echo "Unexpected exception: " . get_class($e) . " - " . $e->getMessage() . "\n";
         }
     }
-})->with('fuzzing_inputs');
+})->with('fuzzing_inputs_with_attributes');
+
 
 
 it('prepares a valid gift', function (): void {
